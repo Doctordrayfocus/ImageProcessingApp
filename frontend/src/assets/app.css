@@ -1,0 +1,9 @@
+@import url(//fonts.googleapis.com/css?family=Quicksand);
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+    font-family: Quicksand;
+}
