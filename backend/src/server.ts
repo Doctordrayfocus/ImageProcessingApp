@@ -49,6 +49,10 @@ app.get("/images", (request, response: Response) => {
   imageHandler.getAllImages(request, response)
 });
 
+app.get("/create-stream/:topic", (request, response: Response) => {
+  imageHandler.getStreamID(request, response)
+});
+
 app.use(express.static('public'));
 
 

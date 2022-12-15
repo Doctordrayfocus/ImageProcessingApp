@@ -305,4 +305,10 @@ export default class ImageHandler {
       res.json(allImages);
     });
   };
+
+  public getStreamID = (req: Request, res: Response) => {
+     this.quixWriter.createStream({}, req.params.topic)?.then((response) => {
+       res.send(response.streamId)
+     })
+  };
 }
