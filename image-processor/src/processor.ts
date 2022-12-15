@@ -6,11 +6,14 @@ import QuixWriter, { EventData } from "./quix/QuixWriter";
 
 export default class ImageProcessor {
   constructor() {
-    this.quixReader.connector.start().then(() => {
-      console.log("Quix reader connected.");
-      this.listenForRawImage();
-    });
+    if (this.quixAccessToken) {
+      this.quixReader.connector?.start().then(() => {
+        console.log("Quix reader connected.");
+        this.listenForRawImage();
+      });
+    }
   }
+  private quixAccessToken = process.env.QUIX_ACCESS_TOKEN;
   private quixWriter = new QuixWriter();
   private quixReader = new QuixReader();
   private activeProcesses = 0;

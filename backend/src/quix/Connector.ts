@@ -8,15 +8,18 @@ export default class QuixConnector {
     accessTokenFactory: () => this.accessToken || "",
   };
 
-  public connection: signalR.HubConnection;
+  public connection: signalR.HubConnection | undefined;
 
   constructor(apiType: string) {
-    this.connection = new signalR.HubConnectionBuilder()
+    if(this.accessToken) {
+      this.connection = new signalR.HubConnectionBuilder()
       .withUrl(
         `https://${apiType}-${this.workspaceId}.platform.quix.ai/hub`,
         this.options
       )
       .build();
+    }
+   
    
   }
 }

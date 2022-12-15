@@ -9,16 +9,16 @@ export interface IncomingEventData {
 }
 
 export default class QuixReader {
-    public connector: signalR.HubConnection;
+    public connector: signalR.HubConnection | undefined;
 
     constructor(){
         this.connector = new QuixConnector('reader').connection
     }
 
     public listenToTopic = (topic: string, callback: Function) => {
-        this.connector.invoke("SubscribeToPackages", topic)
+        this.connector?.invoke("SubscribeToPackages", topic)
 
-        this.connector.on("PackageReceived", (data) => {
+        this.connector?.on("PackageReceived", (data) => {
             console.log(data)
             let model: IncomingEventData =  data
             // handle event data

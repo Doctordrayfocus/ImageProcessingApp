@@ -1,0 +1,1 @@
+npm run --prefix backend serve & npm run --prefix frontend serve & npm run --prefix image-processor serve

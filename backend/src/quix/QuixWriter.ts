@@ -9,14 +9,17 @@ export interface EventData {
 }
 
 export default class QuixWriter {
-  private connector: signalR.HubConnection;
+  private connector: signalR.HubConnection | undefined;
+
+  private quixAccessToken = process.env.QUIX_ACCESS_TOKEN;
 
   constructor() {
-    this.connector = new QuixConnector("writer").connection 
-
-    this.connector.start().then(() => {
+    this.connector = new QuixConnector("writer").connection;
+    if (this.quixAccessToken) {
+      this.connector?.start().then(() => {
         console.log("Quix writer connected.");
       });
+    }
   }
 
   public createStream = (
@@ -24,12 +27,11 @@ export default class QuixWriter {
     topic: string
   ): Promise<{
     streamId: string;
-  }> => {
-    return this.connector
-      .invoke("CreateStream", topic, streamDetails)
-      .then((response) => {
+  }> | undefined => {
+    return this.connector?.invoke("CreateStream", topic, streamDetails)
+      .then((response: any) => {
         return response;
-      });
+      })
   };
 
   public sendParameterData = (
@@ -37,9 +39,8 @@ export default class QuixWriter {
     parameterData: any,
     topic: string
   ) => {
-    return this.connector
-      .invoke("SendParameterData", topic, streamId, parameterData)
-      .then((response) => {
+    return this.connector?.invoke("SendParameterData", topic, streamId, parameterData)
+      .then((response: any) => {
         return response;
       });
   };
@@ -49,12 +50,12 @@ export default class QuixWriter {
     eventData: EventData[],
     topic: string
   ) => {
-    return this.connector
-      .invoke("SendEventData", topic, streamId, eventData)
-      .then((response) => {
+    return this.connector?.invoke("SendEventData", topic, streamId, eventData)
+      .then((response: any) => {
         return response;
-      }).catch((reason) => {
-          console.log(reason)
-      } );
+      })
+      .catch((reason: any) => {
+        console.log(reason);
+      });
   };
 }

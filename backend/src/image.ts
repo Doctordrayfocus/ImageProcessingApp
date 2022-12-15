@@ -10,16 +10,20 @@ import WebSocketConnector from "./socket";
 
 export default class ImageHandler {
   constructor(socketIO: Server) {
-    this.quixReader.connector.start().then(() => {
-      console.log("Quix reader connected.");
-      this.listenForProcessedImage();
-    });
+    if(this.quixAccessToken) {
+      this.quixReader.connector?.start().then(() => {
+        console.log("Quix reader connected.");
+        this.listenForProcessedImage();
+      });
+    }
+   
     this.webSocket = socketIO
   }
   private webSocket;
   private quixWriter = new QuixWriter();
   private quixReader = new QuixReader();
   private rawImageStreamId = process.env.RAW_IMAGES_STREAM_ID || "";
+  private quixAccessToken = process.env.QUIX_ACCESS_TOKEN;
   private processedImagesStreamId =
     process.env.PROCESSED_IMAGES_STREAM_ID || "";
 
@@ -277,17 +281,22 @@ export default class ImageHandler {
       // process image
       this.getProcessedImagesFromNetwork(imageUrl, imageData, res);
     } else {
-    
-      this.webSocket.on("connection", (socket) => {
-        socket.emit("image-status", {
-          imageId: imageData.id,
-          status: "In Queue",
-        });
-      })
-      // publish event to raw-images topic
-      this.publishImageData(imageData, imageUrl);
 
-      res.json(imageData);
+      if(this.quixAccessToken) {
+        this.webSocket.on("connection", (socket) => {
+          socket.emit("image-status", {
+            imageId: imageData.id,
+            status: "In Queue",
+          });
+        })
+        // publish event to raw-images topic
+        this.publishImageData(imageData, imageUrl);
+  
+        res.json(imageData);
+      } else {
+        res.send("No setup for Quix found")
+      }
+     
     }
   };
 

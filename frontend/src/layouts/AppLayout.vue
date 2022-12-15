@@ -20,7 +20,7 @@ export default {
       () => route.meta,
       async (meta) => {
         try {
-          let component =  AppLayoutDefault;
+          let component: any =  AppLayoutDefault;
           if(meta.layout == 'Dashboard') component = Dashboard
           layout.value = component;
         } catch (e) {
