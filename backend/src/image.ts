@@ -3,13 +3,15 @@ import axios from "axios";
 import { Request, response, Response } from "express";
 import fs from "fs";
 import { createClient } from "pexels";
+import { Server } from "socket.io";
 
 export default class ImageHandler {
-  constructor() {
-    //
+  constructor(socketIO: Server) {
+    this.webSocket = socketIO
   }
-
+  
   private prisma = new PrismaClient();
+  private webSocket;
 
   private decodeBase64Image(dataString: string) {
     var matches = dataString.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/),
