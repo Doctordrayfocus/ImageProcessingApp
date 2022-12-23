@@ -3,29 +3,11 @@ import axios from "axios";
 import { Request, response, Response } from "express";
 import fs from "fs";
 import { createClient } from "pexels";
-import { Server } from "socket.io";
-import QuixReader, { IncomingEventData } from "./quix/QuixReader";
-import QuixWriter, { EventData } from "./quix/QuixWriter";
-import WebSocketConnector from "./socket";
 
 export default class ImageHandler {
-  constructor(socketIO: Server) {
-    if(this.quixAccessToken) {
-      this.quixReader.connector?.start().then(() => {
-        console.log("Quix reader connected.");
-        this.listenForProcessedImage();
-      });
-    }
-   
-    this.webSocket = socketIO
+  constructor() {
+    //
   }
-  private webSocket;
-  private quixWriter = new QuixWriter();
-  private quixReader = new QuixReader();
-  private rawImageStreamId = process.env.RAW_IMAGES_STREAM_ID || "";
-  private quixAccessToken = process.env.QUIX_ACCESS_TOKEN;
-  private processedImagesStreamId =
-    process.env.PROCESSED_IMAGES_STREAM_ID || "";
 
   private prisma = new PrismaClient();
 
@@ -100,28 +82,6 @@ export default class ImageHandler {
         res
       );
     });
-  };
-
-  public publishImageData = (imageData: Image, imageUrl: string) => {
-    const eventData: EventData[] = [
-      {
-        id: "newRawImage",
-        timestamp: Date.now() * 1000000,
-        value: JSON.stringify({
-          imageUrl: imageUrl,
-          imageId: imageData.id,
-          imageExtension: JSON.parse(imageData.metaData).extension,
-        }),
-        tags: {
-          image_id: imageData.id.toString(),
-        },
-      },
-    ];
-    this.quixWriter.sendEventData(
-      this.rawImageStreamId,
-      eventData,
-      "raw-images"
-    );
   };
 
   public saveImageToDatabase = async (metadata: any, imageUrl: string) => {
@@ -249,28 +209,6 @@ export default class ImageHandler {
     res.send("image uploaded");
   };
 
-  public listenForProcessedImage = () => {
-    this.quixReader.listenToTopic(
-      "processed-images",
-      (event: IncomingEventData) => {
-        const eventDataValue = JSON.parse(JSON.parse(event.value)[0].Value);
-        const eventImageId = JSON.parse(event.value)[0].Tags.image_id;
-
-        // update record in database
-        this.saveProcessedImages(eventDataValue, eventImageId).then(
-          (imageData) => {
-            // update image on web
-            this.webSocket.emit("image-status", {
-              imageId: eventImageId,
-              status: "Completed",
-              processedImages: eventDataValue,
-            });
-          }
-        );
-      }
-    );
-  };
-
   public handleRequestByArchtecture = (
     architectureType: string,
     imageData: Image,
@@ -280,23 +218,8 @@ export default class ImageHandler {
     if (architectureType == "request-driven") {
       // process image
       this.getProcessedImagesFromNetwork(imageUrl, imageData, res);
-    } else {
-
-      if(this.quixAccessToken) {
-        this.webSocket.on("connection", (socket) => {
-          socket.emit("image-status", {
-            imageId: imageData.id,
-            status: "In Queue",
-          });
-        })
-        // publish event to raw-images topic
-        this.publishImageData(imageData, imageUrl);
-  
-        res.json(imageData);
-      } else {
-        res.send("No setup for Quix found")
-      }
-     
+    } else if(architectureType == "event-driven") {
+       // process image 
     }
   };
 
@@ -306,9 +229,5 @@ export default class ImageHandler {
     });
   };
 
-  public getStreamID = (req: Request, res: Response) => {
-     this.quixWriter.createStream({}, req.params.topic)?.then((response) => {
-       res.send(response.streamId)
-     })
-  };
+
 }

@@ -1,25 +1,14 @@
 import axios from "axios";
 import { Request, response, Response } from "express";
 import sharp from "sharp";
-import QuixReader, { IncomingEventData } from "./quix/QuixReader";
-import QuixWriter, { EventData } from "./quix/QuixWriter";
 
 export default class ImageProcessor {
   constructor() {
-    if (this.quixAccessToken) {
-      this.quixReader.connector?.start().then(() => {
-        console.log("Quix reader connected.");
-        this.listenForRawImage();
-      });
-    }
+  //
   }
-  private quixAccessToken = process.env.QUIX_ACCESS_TOKEN;
-  private quixWriter = new QuixWriter();
-  private quixReader = new QuixReader();
+
   private activeProcesses = 0;
-  private rawImageStreamId = process.env.RAW_IMAGES_STREAM_ID || "";
-  private processedImagesStreamId =
-    process.env.PROCESSED_IMAGES_STREAM_ID || "";
+ 
   private possibleColorArrays = [
     [
       [0, 8, 20],
@@ -120,8 +109,6 @@ export default class ImageProcessor {
             if (res) {
               this.activeProcesses--;
               res?.json(values);
-            } else {
-              this.publishProcessedImageData(values, imageId);
             }
           })
           .catch((error) => {
@@ -139,27 +126,6 @@ export default class ImageProcessor {
       });
   };
 
-  public publishProcessedImageData = (
-    processedImages: string[],
-    imageId: string
-  ) => {
-    const eventData: EventData[] = [
-      {
-        id: "newProcessedImage",
-        timestamp: Date.now() * 1000000,
-        value: JSON.stringify(processedImages),
-        tags: {
-          image_id: imageId.toString(),
-        },
-      },
-    ];
-
-    this.quixWriter.sendEventData(
-      this.processedImagesStreamId,
-      eventData,
-      "processed-images"
-    );
-  };
 
   public uploadImageToCloud = (
     imageId: string,
@@ -177,17 +143,4 @@ export default class ImageProcessor {
       });
   };
 
-  public listenForRawImage = () => {
-    this.quixReader.listenToTopic("raw-images", (event: IncomingEventData) => {
-      const eventData = JSON.parse(JSON.parse(event.value)[0].Value);
-
-      // process image
-      this.processAndUploadImages(
-        eventData.imageUrl,
-        eventData.imageId,
-        eventData.imageExtension,
-        undefined
-      );
-    });
-  };
 }

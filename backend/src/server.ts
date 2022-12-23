@@ -1,28 +1,16 @@
 import express, { Response } from "express";
 import ImageHandler from "./image";
 import multer from 'multer'
-import WebSocketConnector from "./socket";
-import { Server } from "socket.io";
 const cors = require('cors');
 const app = express();
 const port = 3000;
 app.use(cors());
 
 
-
 const http = require("http");
 const server = http.createServer(app);
-const socket =  require("socket.io")(server, {
-  cors: {
-    origin: '*',
-  }
-});
 
-const socketIO = new WebSocketConnector()
-
-socketIO.init(socket)
-
-const imageHandler = new ImageHandler(socket)
+const imageHandler = new ImageHandler()
 
 const upload = multer();
 
@@ -47,10 +35,6 @@ app.post("/images/random", (request, response: Response) => {
 
 app.get("/images", (request, response: Response) => {
   imageHandler.getAllImages(request, response)
-});
-
-app.get("/create-stream/:topic", (request, response: Response) => {
-  imageHandler.getStreamID(request, response)
 });
 
 app.use(express.static('public'));
