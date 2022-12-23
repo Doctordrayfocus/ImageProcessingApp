@@ -2,13 +2,10 @@ import express, { Response } from "express";
 import ImageHandler from "./image";
 import multer from 'multer'
 import WebSocketConnector from "./socket";
-import { Server } from "socket.io";
 const cors = require('cors');
 const app = express();
 const port = 3000;
 app.use(cors());
-
-
 
 const http = require("http");
 const server = http.createServer(app);

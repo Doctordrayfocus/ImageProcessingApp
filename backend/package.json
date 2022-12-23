@@ -26,6 +26,7 @@
     "express-fileupload": "^1.4.0",
     "multer": "^1.4.5-lts.1",
     "pexels": "^1.4.0",
+    "quix-node-sdk": "^1.0.0",
     "socket.io": "^4.5.4"
   }
 }

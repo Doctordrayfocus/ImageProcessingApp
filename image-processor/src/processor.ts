@@ -1,8 +1,7 @@
 import axios from "axios";
 import { Request, response, Response } from "express";
 import sharp from "sharp";
-import QuixReader, { IncomingEventData } from "./quix/QuixReader";
-import QuixWriter, { EventData } from "./quix/QuixWriter";
+import { QuixReader, QuixWriter, EventData, IncomingEventData } from "quix-node-sdk";
 
 export default class ImageProcessor {
   constructor() {

@@ -1,12 +1,10 @@
 import { Image, PrismaClient } from "@prisma/client";
 import axios from "axios";
-import { Request, response, Response } from "express";
+import { Request, Response } from "express";
 import fs from "fs";
 import { createClient } from "pexels";
 import { Server } from "socket.io";
-import QuixReader, { IncomingEventData } from "./quix/QuixReader";
-import QuixWriter, { EventData } from "./quix/QuixWriter";
-import WebSocketConnector from "./socket";
+import { QuixReader, QuixWriter, EventData, IncomingEventData } from "quix-node-sdk";
 
 export default class ImageHandler {
   constructor(socketIO: Server) {
